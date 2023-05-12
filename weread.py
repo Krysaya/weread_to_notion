@@ -226,7 +226,6 @@ def insert_to_notion(bookName, bookId, cover, sort, author,isbn,rating):
             "name": "读完" if markedStatus == 4 else "在读"}}
         properties["ReadingTime"] = {"rich_text": [
             {"type": "text", "text": {"content": format_time}}]}
-		
 	if "continueBeginDate" in read_info:
             properties["BeginDate"] = {"date": {"start": datetime.utcfromtimestamp(read_info.get(
                 "continueBeginDate")).strftime("%Y-%m-%d")}}
