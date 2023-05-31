@@ -113,8 +113,8 @@ def get_heading(level, content):
 
 def get_quote(content):
     return {
-        "type": "quote",
-        "quote": {
+        "type": "callout",
+        "callout": {
             "rich_text": [{
                 "type": "text",
                 "text": {
@@ -127,15 +127,15 @@ def get_quote(content):
 
 
 def get_callout(content, style, colorStyle, reviewId):
-    # 根据不同的划线样式设置不同的emoji 直线type=0 背景颜色是1 波浪线是2
-    emoji = "🌟"
-    if style == 0:
-        emoji = "💡"
-    elif style == 1:
-        emoji = "⭐"
-    # 如果reviewId不是空说明是笔记
-    if reviewId != None:
-        emoji = "✍️"
+#     # 根据不同的划线样式设置不同的emoji 直线type=0 背景颜色是1 波浪线是2
+#     emoji = "🌟"
+#     if style == 0:
+#         emoji = "💡"
+#     elif style == 1:
+#         emoji = "⭐"
+#     # 如果reviewId不是空说明是笔记
+#     if reviewId != None:
+#         emoji = "✍️"
     color = "default"
     # 根据划线颜色设置文字的颜色
     if colorStyle == 1:
@@ -149,17 +149,17 @@ def get_callout(content, style, colorStyle, reviewId):
     elif colorStyle == 5:
         color = "yellow"
     return {
-        "type": "callout",
-        "callout": {
+        "type": "quote",
+        "quote": {
             "rich_text": [{
                 "type": "text",
                 "text": {
                     "content": content,
                 }
             }],
-            "icon": {
-                "emoji": emoji
-            },
+#             "icon": {
+#                 "emoji": emoji
+#             },
             "color": color
         }
     }
