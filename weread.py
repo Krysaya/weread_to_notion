@@ -60,7 +60,6 @@ def get_bookinfo(bookId):
     params = dict(bookId=bookId)
     r = session.get(WEREAD_BOOK_INFO, params=params)
     isbn = ""
-    category = ""
     if r.ok:
         data = r.json()
         isbn = data["isbn"]
@@ -195,7 +194,7 @@ def get_chapter_info(bookId):
     return None
 
 
-def insert_to_notion(bookName, bookId, cover, sort, author,isbn,rating,category):
+def insert_to_notion(bookName, bookId, cover, sort, author,isbn,rating):
     """插入到notion-提"""
     time.sleep(0.3)
     parent = {
