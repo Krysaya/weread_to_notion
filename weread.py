@@ -194,8 +194,8 @@ def get_chapter_info(bookId):
     return None
 
 
-def insert_to_notion(bookName, bookId, cover, sort, author,isbn,rating,categroy):
-    """插入到notion"""
+def insert_to_notion(bookName, bookId, cover, sort, author,isbn,rating,category):
+    """插入到notion-提"""
     time.sleep(0.3)
     parent = {
         "database_id": database_id,
@@ -207,8 +207,7 @@ def insert_to_notion(bookName, bookId, cover, sort, author,isbn,rating,categroy)
         "ISBN": {"rich_text": [{"type": "text", "text": {"content": isbn}}]},
         "URL": {"url": f"https://weread.qq.com/web/reader/{calculate_book_str_id(bookId)}"},
         "Author": {"rich_text": [{"type": "text", "text": {"content": author}}]},
-        "Categroy": {"rich_text": [{"type": "text", "text": {"content": categroy}}]},
-        
+        "category": {"select": {"name": category},
         "Sort": {"number": sort},
         "Rating": {"number": rating},
         "Cover": {"files": [{"type": "external", "name": "Cover", "external": {"url": cover}}]},
@@ -405,7 +404,7 @@ if __name__ == "__main__":
             cover = book.get("cover")
             bookId = book.get("bookId")
             author = book.get("author")
-            categroy = book.get("categroy")
+            category = book.get("category")
             check(bookId)
             chapter = get_chapter_info(bookId)
             bookmark_list = get_bookmark_list(bookId)
