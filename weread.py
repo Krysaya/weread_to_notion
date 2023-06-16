@@ -64,10 +64,8 @@ def get_bookinfo(bookId):
     if r.ok:
         data = r.json()
         isbn = data["isbn"]
-        if data["category"]:
-            category = data["category"]
         rating = data["newRating"]/1000
-    return (isbn, rating, category)
+    return (isbn, rating)
 
 
 def get_review_list(bookId):
@@ -414,10 +412,10 @@ if __name__ == "__main__":
             bookmark_list.extend(reviews)
             bookmark_list = sorted(bookmark_list, key=lambda x: (
                 x.get("chapterUid", 1), 0 if x.get("range", "") == "" else int(x.get("range").split("-")[0])))
-            isbn,rating,category = get_bookinfo(bookId)
+            isbn,rating = get_bookinfo(bookId)
             children, grandchild = get_children(
                 chapter, summary, bookmark_list)
-            id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating,category)
+            id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating)
             results = add_children(id, children)
             if(len(grandchild)>0 and results!=None):
                 add_grandchild(grandchild, results)
