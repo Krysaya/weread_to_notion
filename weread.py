@@ -64,7 +64,8 @@ def get_bookinfo(bookId):
     if r.ok:
         data = r.json()
         isbn = data["isbn"]
-        category = data["category"]
+        if data["category"]:
+            category = data["category"]
         rating = data["newRating"]/1000
     return (isbn, rating, category)
 
@@ -416,7 +417,7 @@ if __name__ == "__main__":
             isbn,rating,category = get_bookinfo(bookId)
             children, grandchild = get_children(
                 chapter, summary, bookmark_list)
-            id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating)
+            id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating,category)
             results = add_children(id, children)
             if(len(grandchild)>0 and results!=None):
                 add_grandchild(grandchild, results)
