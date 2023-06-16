@@ -416,7 +416,7 @@ if __name__ == "__main__":
             isbn,rating,category = get_bookinfo(bookId)
             children, grandchild = get_children(
                 chapter, summary, bookmark_list)
-            id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating,category)
+            id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating)
             results = add_children(id, children)
             if(len(grandchild)>0 and results!=None):
                 add_grandchild(grandchild, results)
