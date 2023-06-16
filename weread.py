@@ -404,7 +404,6 @@ if __name__ == "__main__":
             cover = book.get("cover")
             bookId = book.get("bookId")
             author = book.get("author")
-            category = book.get("category")
             check(bookId)
             chapter = get_chapter_info(bookId)
             bookmark_list = get_bookmark_list(bookId)
@@ -412,7 +411,7 @@ if __name__ == "__main__":
             bookmark_list.extend(reviews)
             bookmark_list = sorted(bookmark_list, key=lambda x: (
                 x.get("chapterUid", 1), 0 if x.get("range", "") == "" else int(x.get("range").split("-")[0])))
-            isbn,rating = get_bookinfo(bookId)
+            isbn,rating,category = get_bookinfo(bookId)
             children, grandchild = get_children(
                 chapter, summary, bookmark_list)
             id = insert_to_notion(title, bookId, cover, sort, author,isbn,rating,categroy)
