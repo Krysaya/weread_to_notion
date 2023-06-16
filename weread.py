@@ -60,11 +60,13 @@ def get_bookinfo(bookId):
     params = dict(bookId=bookId)
     r = session.get(WEREAD_BOOK_INFO, params=params)
     isbn = ""
+    category = ""
     if r.ok:
         data = r.json()
         isbn = data["isbn"]
+        category = data["category"]
         rating = data["newRating"]/1000
-    return (isbn, rating)
+    return (isbn, rating, category)
 
 
 def get_review_list(bookId):
