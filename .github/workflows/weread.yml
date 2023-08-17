@@ -3,7 +3,7 @@ name: weread sync
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 10,14,16 * * ?"
+    - cron: "0 0 10,14,23 * * ?"
 jobs:
   sync:
     name: Sync
