@@ -332,7 +332,7 @@ def get_children(chapter, summary, bookmark_list):
                     i.get("markText"), data.get("style"), i.get("colorStyle"), i.get("reviewId"))
                 children.append(callout)
                 if i.get("abstract") != None and i.get("abstract") != "":
-                    quote = get_quote(i.get("abstract"))
+                    quote = get_quote(i.get("abstract"), i.get("colorStyle"))
                     grandchild[len(children)-1] = quote
 
     else:
