@@ -110,20 +110,11 @@ def get_heading(level, content):
         }
     }
 
+def convert_weread_color(colorStyle):
+    color_map = {0: "orange", 1: "blue", 2: "green", 3: "purple"}
+    return color_map.get(colorStyle, "default")
 
 def get_quote(content,colorStyle):
-    color = "default"
-    # 根据划线颜色设置文字的颜色
-    if colorStyle == 1:
-        color = "red"
-    elif colorStyle == 2:
-        color = "purple"
-    elif colorStyle == 3:
-        color = "blue"
-    elif colorStyle == 4:
-        color = "green"
-    elif colorStyle == 5:
-        color = "yellow"
     return {
         "type": "quote",
         "quote": {
@@ -133,12 +124,12 @@ def get_quote(content,colorStyle):
                     "content": content
                 },
             }],
-            "color": color
+            "color": convert_weread_color(colorStyle)  # ✅ 颜色映射
         }
     }
 
 
-def get_callout(content, style, colorStyle, reviewId):
+def get_callout(content):
 #     # 根据不同的划线样式设置不同的emoji 直线type=0 背景颜色是1 波浪线是2
 #     emoji = "🌟"
 #     if style == 0:
@@ -148,18 +139,18 @@ def get_callout(content, style, colorStyle, reviewId):
 #     # 如果reviewId不是空说明是笔记
 #     if reviewId != None:
 #         emoji = "✍️"
-    color = "default"
-    # 根据划线颜色设置文字的颜色
-    if colorStyle == 1:
-        color = "red"
-    elif colorStyle == 2:
-        color = "purple"
-    elif colorStyle == 3:
-        color = "blue"
-    elif colorStyle == 4:
-        color = "green"
-    elif colorStyle == 5:
-        color = "yellow"
+    # color = "default"
+    # # 根据划线颜色设置文字的颜色
+    # if colorStyle == 1:
+    #     color = "red"
+    # elif colorStyle == 2:
+    #     color = "purple"
+    # elif colorStyle == 3:
+    #     color = "blue"
+    # elif colorStyle == 4:
+    #     color = "green"
+    # elif colorStyle == 5:
+    #     color = "yellow"
     return {
         "type": "callout",
         "callout": {
@@ -172,7 +163,7 @@ def get_callout(content, style, colorStyle, reviewId):
 #             "icon": {
 #                 "emoji": emoji
 #             },
-            "color": color
+            # "color": color
         }
     }
 
@@ -328,12 +319,25 @@ def get_children(chapter, summary, bookmark_list):
                 children.append(get_heading(
                     chapter.get(key).get("level"), chapter.get(key).get("title")))
             for i in value:
-                callout = get_callout(
-                    i.get("markText"), data.get("style"), i.get("colorStyle"), i.get("reviewId"))
-                children.append(callout)
-                if i.get("abstract") != None and i.get("abstract") != "":
-                    quote = get_quote(i.get("abstract"), i.get("colorStyle"))
-                    grandchild[len(children)-1] = quote
+                # callout = get_callout(
+                #     i.get("markText"), data.get("style"), i.get("colorStyle"), i.get("reviewId"))
+                # children.append(callout)
+                # if i.get("abstract") != None and i.get("abstract") != "":
+                #     quote = get_quote(i.get("abstract"), i.get("colorStyle"))
+                #     grandchild[len(children)-1] = quote
+                 abstract = bookmark.get('abstract', '')
+                color_style = i.get('colorStyle', 0)
+                review_id = i.get('reviewId')
+        
+        # Step1: 处理划线（始终优先）
+                if abstract:  # ✅ 先添加 quote
+                children.append(get_quote(abstract, color_style))
+        
+        # Step2: 处理关联笔记（如果存在）
+                if review_id:
+                reviews = get_review_list(review_id)
+                for review in reviews:
+                children.append(get_callout(review['content']))  # ✅ 后添加 callout
 
     else:
         # 如果没有章节信息
