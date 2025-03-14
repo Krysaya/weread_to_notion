@@ -335,9 +335,9 @@ def get_children(chapter, summary, bookmark_list):
         
         # Step2: 处理关联笔记（如果存在）
                 if review_id:
-                reviews = get_review_list(review_id)
+                    reviews = get_review_list(review_id)
                 for review in reviews:
-                children.append(get_callout(review['content']))  # ✅ 后添加 callout
+                    children.append(get_callout(review['content']))  # ✅ 后添加 callout
 
     else:
         # 如果没有章节信息
