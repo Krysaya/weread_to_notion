@@ -325,7 +325,7 @@ def get_children(chapter, summary, bookmark_list):
                 # if i.get("abstract") != None and i.get("abstract") != "":
                 #     quote = get_quote(i.get("abstract"), i.get("colorStyle"))
                 #     grandchild[len(children)-1] = quote
-                 abstract = bookmark.get('abstract', '')
+                abstract = bookmark.get('abstract', '')
                 color_style = i.get('colorStyle', 0)
                 review_id = i.get('reviewId')
         
