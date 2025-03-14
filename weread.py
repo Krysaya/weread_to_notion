@@ -331,7 +331,7 @@ def get_children(chapter, summary, bookmark_list):
         
         # Step1: 处理划线（始终优先）
                 if abstract:  # ✅ 先添加 quote
-                children.append(get_quote(abstract, color_style))
+                    children.append(get_quote(abstract, color_style))
         
         # Step2: 处理关联笔记（如果存在）
                 if review_id:
