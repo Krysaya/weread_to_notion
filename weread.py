@@ -112,7 +112,8 @@ def get_heading(level, content):
 
 
 def get_quote(content,colorStyle):
-     color = "default"
+    color = "default"
+    # 根据划线颜色设置文字的颜色
     if colorStyle == 1:
         color = "red"
     elif colorStyle == 2:
@@ -123,7 +124,6 @@ def get_quote(content,colorStyle):
         color = "green"
     elif colorStyle == 5:
         color = "yellow"
-   
     return {
         "type": "quote",
         "quote": {
