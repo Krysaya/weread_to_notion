@@ -125,8 +125,8 @@ def get_quote(content):
     elif colorStyle == 5:
         color = "yellow"
     return {
-        "type": "callout",
-        "callout": {
+        "type": "quote",
+        "quote": {
             "rich_text": [{
                 "type": "text",
                 "text": {
@@ -161,8 +161,8 @@ def get_callout(content, style, colorStyle, reviewId):
     elif colorStyle == 5:
         color = "yellow"
     return {
-        "type": "quote",
-        "quote": {
+        "type": "callout",
+        "callout": {
             "rich_text": [{
                 "type": "text",
                 "text": {
