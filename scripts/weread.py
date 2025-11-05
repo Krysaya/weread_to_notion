@@ -12,6 +12,7 @@ from datetime import datetime
 import hashlib
 from dotenv import load_dotenv
 import os
+from retrying import retry
 from utils import (
     get_callout,
     get_date,
@@ -29,12 +30,12 @@ from utils import (
 )
 load_dotenv()
 WEREAD_URL = "https://weread.qq.com/"
-WEREAD_NOTEBOOKS_URL = "https://i.weread.qq.com/user/notebooks"
-WEREAD_BOOKMARKLIST_URL = "https://i.weread.qq.com/book/bookmarklist"
-WEREAD_CHAPTER_INFO = "https://i.weread.qq.com/book/chapterInfos"
-WEREAD_READ_INFO_URL = "https://i.weread.qq.com/book/readinfo"
-WEREAD_REVIEW_LIST_URL = "https://i.weread.qq.com/review/list"
-WEREAD_BOOK_INFO = "https://i.weread.qq.com/book/info"
+WEREAD_NOTEBOOKS_URL = "https://weread.qq.com/api/user/notebook"
+WEREAD_BOOKMARKLIST_URL = "https://weread.qq.com/web/book/bookmarklist"
+WEREAD_CHAPTER_INFO = "https://weread.qq.com/web/book/chapterInfos"
+WEREAD_READ_INFO_URL = "https://weread.qq.com/web/book/readinfo"
+WEREAD_REVIEW_LIST_URL = "https://weread.qq.com/web/review/list"
+WEREAD_BOOK_INFO = "https://weread.qq.com/web/book/info"
 
 
 def parse_cookie_string(cookie_string):
@@ -47,12 +48,17 @@ def parse_cookie_string(cookie_string):
         cookiejar = cookiejar_from_dict(cookies_dict, cookiejar=None, overwrite=True)
     return cookiejar
 
+def refresh_token(exception):
+    session.get(WEREAD_URL)
 
+@retry(stop_max_attempt_number=3, wait_fixed=5000,retry_on_exception=refresh_token)
 def get_bookmark_list(bookId):
     """获取我的划线"""
+    session.get(WEREAD_URL)
     params = dict(bookId=bookId)
     r = session.get(WEREAD_BOOKMARKLIST_URL, params=params)
     if r.ok:
+        print(r.json())
         updated = r.json().get("updated")
         updated = sorted(
             updated,
@@ -61,32 +67,35 @@ def get_bookmark_list(bookId):
         return r.json()["updated"]
     return None
 
-
+@retry(stop_max_attempt_number=3, wait_fixed=5000,retry_on_exception=refresh_token)
 def get_read_info(bookId):
+    session.get(WEREAD_URL)
     params = dict(bookId=bookId, readingDetail=1, readingBookIndex=1, finishedDate=1)
     r = session.get(WEREAD_READ_INFO_URL, params=params)
     if r.ok:
         return r.json()
     return None
 
-
+@retry(stop_max_attempt_number=3, wait_fixed=5000,retry_on_exception=refresh_token)
 def get_bookinfo(bookId):
     """获取书的详情"""
+    session.get(WEREAD_URL)
     params = dict(bookId=bookId)
     r = session.get(WEREAD_BOOK_INFO, params=params)
     isbn = ""
     if r.ok:
         data = r.json()
-        isbn = data["isbn"]
-        newRating = data["newRating"] / 1000
+        isbn = data.get("isbn","")
+        newRating = data.get("newRating", 0) / 1000
         return (isbn, newRating)
     else:
         print(f"get {bookId} book info failed")
         return ("", 0)
 
-
+@retry(stop_max_attempt_number=3, wait_fixed=5000,retry_on_exception=refresh_token)
 def get_review_list(bookId):
     """获取笔记"""
+    session.get(WEREAD_URL)
     params = dict(bookId=bookId, listType=11, mine=1, syncKey=0)
     r = session.get(WEREAD_REVIEW_LIST_URL, params=params)
     reviews = r.json().get("reviews")
@@ -99,16 +108,18 @@ def get_review_list(bookId):
 
 def check(bookId):
     """检查是否已经插入过 如果已经插入了就删除"""
-    time.sleep(0.3)
     filter = {"property": "BookId", "rich_text": {"equals": bookId}}
     response = client.databases.query(database_id=database_id, filter=filter)
     for result in response["results"]:
-        time.sleep(0.3)
-        client.blocks.delete(block_id=result["id"])
+        try:
+            client.blocks.delete(block_id=result["id"])
+        except Exception as e:
+            print(f"删除块时出错: {e}")
 
-
+@retry(stop_max_attempt_number=3, wait_fixed=5000,retry_on_exception=refresh_token)
 def get_chapter_info(bookId):
     """获取章节信息"""
+    session.get(WEREAD_URL)
     body = {"bookIds": [bookId], "synckeys": [0], "teenmode": 0}
     r = session.post(WEREAD_CHAPTER_INFO, json=body)
     if (
@@ -124,7 +135,6 @@ def get_chapter_info(bookId):
 
 def insert_to_notion(bookName, bookId, cover, sort, author, isbn, rating, categories):
     """插入到notion"""
-    time.sleep(0.3)
     if not cover or not cover.startswith("http"):
         cover = "https://www.notion.so/icons/book_gray.svg"
     parent = {"database_id": database_id, "type": "database_id"}
@@ -191,6 +201,7 @@ def add_grandchild(grandchild, results):
 
 def get_notebooklist():
     """获取笔记本列表"""
+    session.get(WEREAD_URL)
     r = session.get(WEREAD_NOTEBOOKS_URL)
     if r.ok:
         data = r.json()
@@ -325,31 +336,6 @@ def calculate_book_str_id(book_id):
     return result
 
 
-def download_image(url, save_dir="cover"):
-    # 确保目录存在，如果不存在则创建
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    # 获取文件名，使用 URL 最后一个 '/' 之后的字符串
-    file_name = url.split("/")[-1] + ".jpg"
-    save_path = os.path.join(save_dir, file_name)
-
-    # 检查文件是否已经存在，如果存在则不进行下载
-    if os.path.exists(save_path):
-        print(f"File {file_name} already exists. Skipping download.")
-        return save_path
-
-    response = requests.get(url, stream=True)
-    if response.status_code == 200:
-        with open(save_path, "wb") as file:
-            for chunk in response.iter_content(chunk_size=128):
-                file.write(chunk)
-        print(f"Image downloaded successfully to {save_path}")
-    else:
-        print(f"Failed to download image. Status code: {response.status_code}")
-    return save_path
-
-
 def try_get_cloud_cookie(url, id, password):
     if url.endswith("/"):
         url = url[:-1]
@@ -420,12 +406,6 @@ if __name__ == "__main__":
             book = book.get("book")
             title = book.get("title")
             cover = book.get("cover").replace("/s_", "/t7_")
-            # print(cover)
-            # if book.get("author") == "公众号" and book.get("cover").endswith("/0"):
-            #     cover += ".jpg"
-            # if cover.startswith("http") and not cover.endswith(".jpg"):
-            #     path = download_image(cover)
-            #     cover = f"https://raw.githubusercontent.com/{os.getenv('REPOSITORY')}/{os.getenv('REF').split('/')[-1]}/{path}"
             bookId = book.get("bookId")
             author = book.get("author")
             categories = book.get("categories")
