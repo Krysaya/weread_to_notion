@@ -223,11 +223,31 @@ def get_sort():
         }
     ]
     response = client.databases.query(
-        database_id=database_id, filter=filter, sorts=sorts, page_size=1
+            {
+                "database_id": database_id,
+                "sorts": [
+                    {
+                        "property": "Sort",
+                        "direction": "descending"
+                    }
+                ],
+                "page_size": 1
+            }
     )
-    if len(response.get("results")) == 1:
-        return response.get("results")[0].get("properties").get("Sort").get("number")
-    return 0
+    if response.get("results") and len(response["results"]) > 0:
+            latest_page = response["results"][0]
+            sort_property = latest_page.get("properties", {}).get("Sort", {})
+            
+            # 获取 Sort 属性的实际值
+            if sort_property.get("type") == "number":
+                return sort_property.get("number", 0)
+            else:
+                # 如果是其他类型，尝试转换
+                return float(sort_property.get("value", 0))
+        return 0
+    except Exception as e:
+        print(f"获取排序值时出错: {e}")
+        return 0
 
 
 def get_children(chapter, summary, bookmark_list):
