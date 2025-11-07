@@ -28,6 +28,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Debug and fix Notion SDK
+        run: |
+          echo "当前 Notion SDK 版本:"
+          pip show notion-client
+          echo "升级到最新版本..."
+          pip install --upgrade notion-client
+          echo "升级后的版本:"
+          pip show notion-client
       - name: Debug info
         run: |
           python -c "from notion_client import Client; print('Notion client imported successfully')"
