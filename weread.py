@@ -292,7 +292,7 @@ def get_sort():
         }
     ]
     response = client.databases.query(
-        database_id=database_id, filter=filter, sorts=sorts, page_size=1)
+        database_id=database_id,  sorts=sorts, page_size=1)
     if (len(response.get("results")) == 1):
         return response.get("results")[0].get("properties").get("Sort").get("number")
     return 0
