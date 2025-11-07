@@ -214,36 +214,36 @@ def get_notebooklist():
 
 
 def get_sort():
-    """获取database中的最新时间"""
-    filter = {"property": "Sort", "number": {"is_not_empty": True}}
-    sorts = [
-        {
-            "property": "Sort",
-            "direction": "descending",
-        }
-    ]
-    response = client.databases.query(
-            {
-                "database_id": database_id,
-                "sorts": [
-                    {
-                        "property": "Sort",
-                        "direction": "descending"
-                    }
-                ],
-                "page_size": 1
-            }
-    )
-    if response.get("results") and len(response["results"]) > 0:
+    """获取最新的排序值"""
+    try:
+        print(f"正在查询数据库: {database_id}")
+        
+        # 方法1: 使用新的 API 调用方式
+        response = client.databases.query(
+            database_id=database_id,
+            sorts=[
+                {
+                    "property": "Sort",
+                    "direction": "descending"
+                }
+            ],
+            page_size=1
+        )
+        
+        print(f"查询响应: {response}")
+        
+        if response.get("results") and len(response["results"]) > 0:
             latest_page = response["results"][0]
             sort_property = latest_page.get("properties", {}).get("Sort", {})
+            print(f"Sort属性: {sort_property}")
             
-            # 获取 Sort 属性的实际值
-            if sort_property.get("type") == "number":
-                return sort_property.get("number", 0)
-            else:
-                # 如果是其他类型，尝试转换
-                return float(sort_property.get("value", 0))
+            return sort_property.get("number", 0) if sort_property.get("type") == "number" else 0
+        
+        return 0
+        
+    except AttributeError as e:
+        print(f"API 方法不存在: {e}")
+        # 回退方案
         return 0
     except Exception as e:
         print(f"获取排序值时出错: {e}")
